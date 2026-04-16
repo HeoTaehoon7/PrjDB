@@ -6,6 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
+
 public class TestZipcode01 {
 
 	// 연결 문자열 :  Connection String
