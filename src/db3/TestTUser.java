@@ -5,6 +5,8 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Scanner;
 
 public class TestTUser {
@@ -40,7 +42,8 @@ public class TestTUser {
 			
 			switch( choice ) {
 			case  "1":  // 회원 목록 
-				
+				ArrayList<TUserDTO> userList  = getTUserList();
+				displayList( userList );
 				break;
 			case  "2":  // 회원 조회 (아이디)
 				System.out.println("조회할 아이디를 입력하세요");
@@ -69,14 +72,45 @@ public class TestTUser {
 
 	}
 
-	// 입력받은 아이디로 한줄을 db 에서 조회한다
+	//-----------------------------------------------------
+
+	// 1. 전체 목록 조회 - db 에서
+	private static ArrayList<TUserDTO> getTUserList() 
+			throws SQLException, ClassNotFoundException {
+		
+		Class.forName( driver );
+		Connection           conn   =  DriverManager.getConnection(url, dbuid, dbpwd);
+		String               sql    =  " SELECT * FROM TUSER ";
+		sql                        +=  " ORDER BY USERID ASC ";
+		PreparedStatement    pstmt  =  conn.prepareStatement( sql );
+		ResultSet            rs     =  pstmt.executeQuery();
+		
+		ArrayList<TUserDTO>  userList = new ArrayList<>();
+		
+		while( rs.next()  ) {
+			String   userid    =  rs.getString("userid");   
+			String   username  =  rs.getString("username");
+			String   email     =  rs.getString("email");
+			
+			TUserDTO  tuser    =  new TUserDTO(userid, username, email); 
+			userList.add( tuser );
+		}
+		
+		rs.close();		
+		pstmt.close();
+		conn.close();
+		
+		return userList;
+	}
+
+	// 2. 입력받은 아이디로 한줄을 db 에서 조회한다
 	private static TUserDTO getTUser(String uid) 
 			throws ClassNotFoundException, SQLException {
 		Class.forName( driver );
 		Connection          conn   =  DriverManager.getConnection(url, dbuid, dbpwd);
 		String              sql    =  " SELECT * FROM TUSER  WHERE  USERID = ?";
 		PreparedStatement   pstmt  =  conn.prepareStatement( sql );
-		pstmt.setString(1, uid );
+		pstmt.setString(1, uid.toUpperCase() );
 		
 		TUserDTO  tuser = null;
 		
@@ -98,19 +132,8 @@ public class TestTUser {
 		return tuser;
 	}
 
-	// TUser 한줄을 출력한다
-	private static void display(TUserDTO tuser) {
-		
-		if( tuser == null ) 
-			System.out.println("조회한 자료가 없습니다");
-		else {
-			String msg = String.format("%s %s %s",
-				tuser.getUserid(), tuser.getUsername(), tuser.getEmail());
-			System.out.println( msg );
-		}
-	}
-
-	// db 에 insert 한다
+	
+	// 3. db 에 insert 한다
 	private static int addTUser(TUserDTO tuser) throws SQLException, ClassNotFoundException {
 		
 		Class.forName(driver);		
@@ -131,6 +154,7 @@ public class TestTUser {
 		
 	}
 
+	//-------------------------------------------------
 	// 데이터를 키보드로 입력받는다
 	private static TUserDTO inputData() {
 		System.out.println("아이디:");
@@ -143,6 +167,46 @@ public class TestTUser {
 		TUserDTO  tuser     =  new TUserDTO(userid, username, email);
 		return    tuser;		
 	}
+	
+	// TUser 한줄을 출력한다
+	private static void display(TUserDTO tuser) {
+		
+		if( tuser == null ) 
+			System.out.println("조회한 자료가 없습니다");
+		else {
+			String msg = String.format("%s %s %s",
+				tuser.getUserid(), tuser.getUsername(), tuser.getEmail());
+			System.out.println( msg );
+		}
+		
+		System.out.println("Press enter key ....");
+		in.nextLine();
+	}
+	
+	// 전체 목록을 출력한다
+	private static void displayList(ArrayList<TUserDTO> userList) {
+		
+		if( userList.size() == 0  ) {
+			System.out.println("조회한 자료가 없습니다");
+			return ;
+		}
+		
+		String   fmt  = "";
+		String   msg  = "";
+		for (TUserDTO tuser : userList) {
+			String  userid    =  tuser.getUserid();
+			String  username  =  tuser.getUsername();
+			String  email     =  tuser.getEmail();
+			msg  = """
+			%s %s %s		
+			""".formatted(userid, username, email); // kava template 문자열
+			System.out.print( msg );
+		}
+		
+		System.out.println("Press enter key ....");
+		in.nextLine();
+	}
+
 
 }
 
