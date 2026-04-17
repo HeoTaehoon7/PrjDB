@@ -60,14 +60,28 @@ public class TestTUser {
 				break;
 			case  "4":  // 회원 수정
 				System.out.println("수정할 아이디를 입력하세요");
-				String     orgUserid =  in.nextLine();     // 검색할 데이터, 변경대상X
+				String     orgUserid  =  in.nextLine();     // 검색할 데이터, 변경대상X
 				
 				System.out.println("수정할 내용를 입력하세요");
-				tus	er                =  inputUpdateData(); // 수정할 데이터
+				tuser                 =  inputUpdateData(); // 수정할 데이터
 				
-				aftcnt               =  updateTUser( orgUserid, tuser );
+				aftcnt                =  updateTUser( orgUserid, tuser );
+				System.out.println(aftcnt + "건 수정되었습니다");
+				
+				System.out.println("Press Enter Key ....");
+				in.nextLine();
+				
 				break;
 			case  "5":  // 회원 삭제  
+				System.out.println("삭제할 아이디를 입력하세요");
+				String  orgUserid2   =   in.nextLine();
+				
+				aftcnt               =   deleteTUser( orgUserid2 );     
+				System.out.println(aftcnt + "건 삭제되었습니다");
+				
+				System.out.println("Press Enter Key ....");
+				in.nextLine();
+				
 				break;
 			case  "q":  // 종료
 				System.out.println("프로그램을 종료합니다");
@@ -82,8 +96,6 @@ public class TestTUser {
 
 	//-----------------------------------------------------
  
-
-
 	// 1. 전체 목록 조회 - db 에서
 	private static ArrayList<TUserDTO> getTUserList() 
 			throws SQLException, ClassNotFoundException {
@@ -165,7 +177,8 @@ public class TestTUser {
 	}
 	
    // 4. 회원 수정
-	private static int updateTUser(String orgUserid, TUserDTO tuser) throws ClassNotFoundException, SQLException {
+	private static int updateTUser(String orgUserid, TUserDTO tuser)
+			throws ClassNotFoundException, SQLException {
 		
 		Class.forName(driver);		
 		Connection          conn   =  DriverManager.getConnection(url, dbuid, dbpwd);
@@ -176,15 +189,37 @@ public class TestTUser {
 		sql   +=  "          EMAIL    = ? ";
 		sql   +=  "  WHERE   USERID   = ? "; 
 		PreparedStatement   pstmt  =  conn.prepareStatement( sql );
-		pstmt.setString(1, tuser.getUserid());
-		pstmt.setString(2, tuser.getUsername());
-		pstmt.setString(3, tuser.getEmail());		
+		pstmt.setString( 1, tuser.getUsername() );
+		pstmt.setString( 2, tuser.getEmail()    );
+		pstmt.setString( 3, orgUserid);		
 		
 		int                 aftcnt =  pstmt.executeUpdate();		
 		
 		pstmt.close();
 		conn.close();		
 		return              aftcnt; 
+	}
+	
+
+   // 5. 회원 삭제
+	private static int deleteTUser(String orgUserid2)
+			throws ClassNotFoundException, SQLException {
+		
+		Class.forName(driver);		
+		Connection          conn   =  DriverManager.getConnection(url, dbuid, dbpwd);
+		
+		String              sql    =  "";
+		sql   +=  "  DELETE  FROM TUSER "  ;
+		sql   +=  "  WHERE   USERID   = ? "; 
+		PreparedStatement   pstmt  =  conn.prepareStatement( sql );
+		pstmt.setString( 1, orgUserid2 );
+		
+		int                 aftcnt =  pstmt.executeUpdate();		
+		
+		pstmt.close();
+		conn.close();		
+		return              aftcnt;
+		
 	}
 
 
